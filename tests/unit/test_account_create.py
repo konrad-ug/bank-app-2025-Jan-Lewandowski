@@ -33,17 +33,61 @@ class TestAccount:
         assert account.balance == 50.0
 
     def test_account_promo_wrong_prefix(self):
-        account = Account("John", "Doe", "PROM_abcdef")
+        account = Account("John", "Doe", "12312312312","PROM_abcdef")
         assert account.balance == 0.0
 
     def test_account_promo_suffix_too_long(self):
-        account = Account("John", "Doe", "PROM_abcdef")
+        account = Account("John", "Doe", "12312312312", "PROM_abcdef")
         assert account.balance == 0.0
 
     def test_account_promo_wrong_format(self):
-        account = Account("John", "Doe", "INVALID_FORMAT")
+        account = Account("John", "Doe", "12312312312", "INVALID_FORMAT")
         assert account.balance == 0.0 
 
     def test_account_promo_suffix_too_short(self):
-        account = Account("John", "Doe", "PROM_a")
+        account = Account("John", "Doe", "12312312312", "PROM_a")
+        assert account.balance == 0.0
+        
+    def test_account_promo_valid_young(self):
+        account = Account("John", "Doe", "65123456789", "PROM_abc")
+        assert account.balance == 50.0
+        
+    def test_account_promo_valid_young_21st_century(self):
+        account = Account("John", "Doe", "23345678901", "PROM_abc")
+        assert account.balance == 50.0
+
+    def test_account_promo_wrong_prefix_young(self):
+        account = Account("John", "Doe", "PROM_abcdef")
+        assert account.balance == 0.0
+
+    def test_account_promo_suffix_too_long_young(self):
+        account = Account("John", "Doe", "65123456789","PROM_abcdef")
+        assert account.balance == 0.0
+
+    def test_account_promo_wrong_format_young(self):
+        account = Account("John", "Doe", "65123456789","INVALID_FORMAT")
+        assert account.balance == 0.0 
+
+    def test_account_promo_suffix_too_short_young(self):
+        account = Account("John", "Doe", "65123456789","PROM_a")
+        assert account.balance == 0.0
+        
+    def test_account_promo_valid_old(self):
+        account = Account("John", "Doe", "55103456789", "PROM_abc")
+        assert account.balance == 0.0
+
+    def test_account_promo_wrong_prefix_old(self):
+        account = Account("John", "Doe", "55123456789", "PRO_abc")
+        assert account.balance == 0.0
+
+    def test_account_promo_suffix_too_long_old(self):
+        account = Account("John", "Doe", "55123456789","PROM_abcdef")
+        assert account.balance == 0.0
+
+    def test_account_promo_wrong_format_old(self):
+        account = Account("John", "Doe", "55123456789","INVALID_FORMAT")
+        assert account.balance == 0.0 
+
+    def test_account_promo_suffix_too_short_old(self):
+        account = Account("John", "Doe", "55123456789","PROM_a")
         assert account.balance == 0.0

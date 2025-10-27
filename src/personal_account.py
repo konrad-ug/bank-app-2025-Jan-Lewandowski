@@ -6,7 +6,15 @@ class PersonalAccount(Account):
         self.last_name = last_name
         self.balance = 50.0 if self.is_promo_code_valid(promo_code) and self.is_not_pensioner(pesel) else 0.0
         self.pesel = pesel if self.is_pesel_valid(pesel) else "Invalid"
-        
+        self.oplata_za_express_przelew = 1.0
+
+    def express_send(self, kwota):
+        if self.is_express_send_correct(kwota):
+            self.balance -= (kwota + 1)
+            return self.balance
+        else:
+            return "Not enough money"
+
     def is_pesel_valid(self,pesel):
         if (len(pesel) == 11 and pesel.isdigit()):
             return True

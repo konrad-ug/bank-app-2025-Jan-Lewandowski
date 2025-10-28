@@ -205,3 +205,41 @@ class TestCompany:
         company_account.balance = 5.0
         company_account.express_send(6.0)
         assert company_account.balance == 5.0
+        
+    def test_company_account_express_send_enough_money(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        company_account.balance = 50.0
+        company_account.express_send(30.0)
+        assert company_account.show_transfers_history == [-30.0]
+        
+
+
+
+
+def test_company_account_get_positive_amount(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        assert company_account.get(50.0) == 50.0
+        aassert company_account.show_transfers_history == [50.0]
+
+    def test_company_account_get_negative_amount(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        assert company_account.get(-50.0) == 0.0
+        assert company_account.balance == 0.0   
+
+    def test_company_account_send_enough_money(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        company_account.balance = 50.0
+        company_account.send(30.0)
+        assert company_account.balance == 20.0
+    
+    def test_company_account_send_not_enough_money(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        company_account.balance = 0.0
+
+        assert company_account.send(30.0) == 0.0
+
+    def test_company_account_send_negative_amount(self):
+        company_account = CompanyAccount("firma", "1231231231")
+        company_account.balance = 30.0
+        company_account.send(-20.0)
+        assert company_account.balance == 30.0

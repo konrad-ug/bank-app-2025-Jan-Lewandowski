@@ -2,7 +2,7 @@ from src.personal_account import PersonalAccount
 
 
 class TestPersonalAccount:
-    # --- Account creation and PESEL validation ---
+    # Account creation and PESEL validation
     def test_account_creation_first_name(self):
         account = PersonalAccount("John", "Doe", "123")
         assert account.first_name == "John"
@@ -23,7 +23,7 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "123123123123123213")
         assert account.pesel == "Invalid"
 
-    def test_account_pesel_good(self):
+    def test_account_pesel_valid(self):
         account = PersonalAccount("John", "Doe", "12312312312")
         assert account.pesel == "12312312312"
 
@@ -31,7 +31,7 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "123123abcd")
         assert account.pesel == "Invalid"
 
-    # --- Promo code tests ---
+    # Promo code tests
     def test_account_promo_valid(self):
         account = PersonalAccount("John", "Doe", "12312312312", "PROM_abc")
         assert account.balance == 50.0
@@ -52,7 +52,7 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "12312312312", "INVALID_FORMAT")
         assert account.balance == 0.0
 
-    # --- get() method ---
+    # get() method 
     def test_account_get_positive_amount_returns_value(self):
         account = PersonalAccount("John", "Doe", "55123456789")
         result = account.get(50.0)
@@ -83,7 +83,7 @@ class TestPersonalAccount:
         account.get(-50.0)
         assert account.historia == []
 
-    # --- send() method ---
+    # send() method
     def test_account_send_enough_money_decreases_balance(self):
         account = PersonalAccount("John", "Doe", "55123456789")
         account.balance = 50.0
@@ -114,18 +114,18 @@ class TestPersonalAccount:
         account.send(-20.0)
         assert account.historia == []
 
-    # --- express_send() method ---
+    # express_send() method
     def test_account_express_send_enough_money_decreases_balance(self):
         account = PersonalAccount("John", "Doe", "55123456789")
         account.balance = 50.0
         account.express_send(30.0)
-        assert account.balance == 19.0  # assuming fee = 1
+        assert account.balance == 19.0
 
     def test_account_express_send_enough_money_adds_to_history(self):
         account = PersonalAccount("John", "Doe", "55123456789")
         account.balance = 50.0
         account.express_send(30.0)
-        assert account.historia == [-31.0]  # amount + fee
+        assert account.historia == [-31.0]
 
     def test_account_express_send_not_enough_money_returns_message(self):
         account = PersonalAccount("John", "Doe", "55123456789")
@@ -201,3 +201,32 @@ class TestPersonalAccount:
     def test_is_not_pensioner_false_when_younger(self):
         account = PersonalAccount("John", "Doe", "55123456789")
         assert account.is_not_pensioner("55123456789") is False
+
+    # submit_for_loan method
+    def test_submit_for_loan_valid(self):
+        account = PersonalAccount("John", "Doe", "12312312312")
+        account.historia = [-3.0,-5.0,2.0,3.0,4.0]
+        account.balance = sum(account.historia)
+        assert account.submit_for_loan(30.0) is True
+        assert account.balance == 31.0
+
+    def test_submit_for_loan_last_three_not_positive(self):
+        account = PersonalAccount("John", "Doe", "12312312312")
+        account.historia = [-3.0, -5.0, 2.0, 3.0, -4.0]
+        account.balance = sum(account.historia)
+        assert account.submit_for_loan(30.0) is False
+        assert account.balance == -7.0
+
+    def test_submit_for_loan_last_three_not_positive_and_too_low_sum(self):
+        account = PersonalAccount("John", "Doe", "12312312312")
+        account.historia = [-3.0, -5.0, 2.0, 3.0, -4.0]
+        account.balance = sum(account.historia)
+        assert account.submit_for_loan(30.0) is False
+        assert account.balance == -7.0
+
+    def test_submit_for_loan_last_three_not_positive_and_valid_sum(self):
+        account = PersonalAccount("John", "Doe", "12312312312")
+        account.historia = [-3.0, -5.0, 200.0, 3.0, -4.0]
+        account.balance = sum(account.historia)
+        assert account.submit_for_loan(30.0) is True
+        assert account.balance == 221.0

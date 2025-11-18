@@ -3,7 +3,7 @@ from src.company_account import CompanyAccount
 
 class TestCompanyAccount:
 
-    # --- NIP validation ---
+    # NIP validation
     def test_company_account_valid_nip_value(self):
         company_account = CompanyAccount("firma", "1231231231")
         assert company_account.nip == "1231231231"
@@ -28,7 +28,7 @@ class TestCompanyAccount:
         company_account = CompanyAccount("firma", "0000000001")
         assert company_account.nip == "0000000001"
 
-    # --- initialization ---
+    # initialization
     def test_company_account_inherits_from_account(self):
         company_account = CompanyAccount("firma", "1231231231")
         assert hasattr(company_account, "historia")
@@ -42,7 +42,7 @@ class TestCompanyAccount:
         company_account = CompanyAccount("firma", "1231231231")
         assert company_account.oplata_za_express_przelew == 5.0
 
-    # --- get() method ---
+    # get() method
     def test_get_returns_positive_amount(self):
         company_account = CompanyAccount("firma", "1231231231")
         result = company_account.get(50.0)
@@ -68,7 +68,7 @@ class TestCompanyAccount:
         company_account.get(-50.0)
         assert company_account.balance == 0.0
 
-    # --- send() method ---
+    # send() method
     def test_send_enough_money_decreases_balance(self):
         company_account = CompanyAccount("firma", "1231231231")
         company_account.balance = 50.0
@@ -93,7 +93,7 @@ class TestCompanyAccount:
         company_account.send(-20.0)
         assert company_account.balance == 30.0
 
-    # --- express_send() method ---
+    # express_send method
     def test_express_send_enough_money_decreases_balance(self):
         company_account = CompanyAccount("firma", "1231231231")
         company_account.balance = 50.0
@@ -132,7 +132,7 @@ class TestCompanyAccount:
         assert company_account.balance == -5.0
         assert company_account.historia == [-10.0]
 
-    # --- is_express_send_correct() ---
+    # is_express_send_correct()
     def test_is_express_send_correct_true(self):
         company_account = CompanyAccount("firma", "1231231231")
         company_account.balance = 100.0

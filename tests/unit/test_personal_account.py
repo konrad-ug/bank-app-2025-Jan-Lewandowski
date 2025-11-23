@@ -1,7 +1,22 @@
 from src.personal_account import PersonalAccount
-
+import pytest
 
 class TestPersonalAccount:
+    @pytest.fixture
+    def account(self):
+        account = PersonalAccount("John", "Doe", "12312312312")
+        return account
+    
+    @pytest.mark.parametrize("historia, amount, expected_result, expected_balance", [
+        ([100, 100, 100], 500, True, 500),
+        ([-100, 100, -100, 100, 1000], 700, True, 700),
+        ([-100, 20000, -100, 100, -1000], 1000, True, 1000),
+        ([100], 666, False, 0),
+        ([-100, 100, 100, 100, -6000, 200], 500, False, 0),
+    ])
+
+    def test_loan(self, account: PersonalAccount, historia, )
+
     # Account creation and PESEL validation
     def test_account_creation_first_name(self):
         account = PersonalAccount("John", "Doe", "123")
@@ -23,7 +38,7 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "123123123123123213")
         assert account.pesel == "Invalid"
 
-    def test_account_pesel_valid(self):
+    def test_account_pesel_valid(self, account: PersonalAccount):
         account = PersonalAccount("John", "Doe", "12312312312")
         assert account.pesel == "12312312312"
 
@@ -203,29 +218,25 @@ class TestPersonalAccount:
         assert account.is_not_pensioner("55123456789") is False
 
     # submit_for_loan method
-    def test_submit_for_loan_valid(self):
-        account = PersonalAccount("John", "Doe", "12312312312")
+    def test_submit_for_loan_valid(self, account: PersonalAccount):
         account.historia = [-3.0,-5.0,2.0,3.0,4.0]
         account.balance = sum(account.historia)
         assert account.submit_for_loan(30.0) is True
         assert account.balance == 31.0
 
-    def test_submit_for_loan_last_three_not_positive(self):
-        account = PersonalAccount("John", "Doe", "12312312312")
+    def test_submit_for_loan_last_three_not_positive(self, account: PersonalAccount):
         account.historia = [-3.0, -5.0, 2.0, 3.0, -4.0]
         account.balance = sum(account.historia)
         assert account.submit_for_loan(30.0) is False
         assert account.balance == -7.0
 
-    def test_submit_for_loan_last_three_not_positive_and_too_low_sum(self):
-        account = PersonalAccount("John", "Doe", "12312312312")
+    def test_submit_for_loan_last_three_not_positive_and_too_low_sum(self, account: PersonalAccount):
         account.historia = [-3.0, -5.0, 2.0, 3.0, -4.0]
         account.balance = sum(account.historia)
         assert account.submit_for_loan(30.0) is False
         assert account.balance == -7.0
 
-    def test_submit_for_loan_last_three_not_positive_and_valid_sum(self):
-        account = PersonalAccount("John", "Doe", "12312312312")
+    def test_submit_for_loan_last_three_not_positive_and_valid_sum(self, account: PersonalAccount):
         account.historia = [-3.0, -5.0, 200.0, 3.0, -4.0]
         account.balance = sum(account.historia)
         assert account.submit_for_loan(30.0) is True

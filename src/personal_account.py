@@ -31,7 +31,7 @@ class PersonalAccount(Account):
       return rok >= 60
 
     def submit_for_loan(self, amount):
-        if (self.historia[-1] > 0.0 and self.historia[-2] > 0.0 and self.historia[-3] > 0.0) or ((len(self.historia) >= 5) and ((self.historia[-1] + self.historia[-2] + self.historia[-3] + self.historia[-4] + self.historia[-5]) > amount)):
+        if (len(self.historia) >= 3 and (self.historia[-1] > 0.0 and self.historia[-2] > 0.0 and self.historia[-3] > 0.0)) or ((len(self.historia) >= 5) and ((self.historia[-1] + self.historia[-2] + self.historia[-3] + self.historia[-4] + self.historia[-5]) > amount)):
             self.balance += amount
             return True
         else:

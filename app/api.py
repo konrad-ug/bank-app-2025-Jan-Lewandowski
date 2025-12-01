@@ -9,7 +9,7 @@ registry = AccountRegistry()
 def create_account():
     data = request.get_json()
     print(f"Create account request: {data}")
-    account = PersonalAccount(data["name"], data["surname"], data["pesel"])
+    account = PersonalAccount(data["first_name"], data["last_name"], data["pesel"])
     registry.add_account(account)
     return jsonify({"message": "Account created"}), 201
 
@@ -17,7 +17,7 @@ def create_account():
 def get_all_accounts():
     print("Get all accounts request received")
     accounts = registry.get_all_accounts()
-    accounts_data = [{"name": acc.first_name, "surname": acc.last_name, "pesel":acc.pesel, "balance": acc.balance} for acc in accounts]
+    accounts_data = [{"first_name": acc.first_name, "last_name": acc.last_name, "pesel":acc.pesel, "balance": acc.balance} for acc in accounts]
     
     return jsonify(accounts_data), 200
 
@@ -30,14 +30,43 @@ def get_account_count():
 @app.route("/api/accounts/<pesel>", methods=['GET'])
 def get_account_by_pesel(pesel):
     found_person = registry.search_account_based_on_pesel(pesel)
-    return jsonify(found_person), 200
+    return (
+        jsonify(
+            {
+                "first_name": found_person.first_name,
+                "last_name": found_person.last_name,
+                "pesel": found_person.pesel,
+                "balance": found_person.balance,
+            }
+        ),
+        200,
+)
 
 @app.route("/api/accounts/<pesel>", methods=['PATCH'])
 def update_account(pesel):
-    #implementacja powinna znaleźć się tutaj
-    return jsonify({"message": "Account updated"}), 200
+    data = request.get_json()
+    found_person = registry.search_account_based_on_pesel(pesel)
+
+    if "first_name" in data:
+        found_person.first_name = data["first_name"]
+    if "last_name" in data:
+        found_person.last_name = data["last_name"]
+    return (
+        jsonify(
+            {
+                "message": "Account updated",
+                "account": {
+                    "pesel": found_person.pesel,
+                    "first_name": found_person.first_name,
+                    "last_name": found_person.last_name,
+                },
+            }
+        ),
+        200,
+    )
 
 @app.route("/api/accounts/<pesel>", methods=['DELETE'])
 def delete_account(pesel):
-    #implementacja powinna znaleźć się tutaj
+    found_person = registry.search_account_based_on_pesel(pesel)
+    found_person = None
     return jsonify({"message": "Account deleted"}), 200

@@ -31,6 +31,17 @@ def test_create_account(live_server):
     assert response.status_code == 201
     assert response.json()["message"] == "Account created"
 
+def test_create_account_when_account_with_same_pesel_exists(live_server):
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "James", "last_name": "Hetfield", "pesel": "89092909825"},
+    )
+    response = requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Kirk", "last_name": "Hammett", "pesel": "89092909825"},
+    )
+    assert response.status_code == 409
+    assert response.json()["message"] == "Account with this PESEL already exists"
 
 def test_get_allaccounts_empty_at_start(live_server):
     response = requests.get(f"{live_server}/api/accounts")
@@ -120,3 +131,71 @@ def test_delete_account(live_server):
     response = requests.delete(f"{live_server}/api/accounts/{pesel}")
     assert response.status_code == 200
     assert response.json()["message"] == "Account deleted"
+
+def test_transfer(live_server):
+    pesel = "99999999999"
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Sender", "last_name": "One", "pesel": pesel},
+    )
+    response = requests.post(
+        f"{live_server}/api/accounts/{pesel}/transfer",
+        json={"type": "incoming", "amount": 25.0, "target_account_pesel": "00000000000"},
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Zlecenie przyjęto do realizacji"
+    updated = requests.get(f"{live_server}/api/accounts/{pesel}").json()
+    assert updated["balance"] == 25.0
+
+
+def test_transfer_account_not_found(live_server):
+    response = requests.post(
+        f"{live_server}/api/accounts/12345678901/transfer",
+        json={"type": "incoming", "amount": 10.0},
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "Account not found"
+
+
+def test_transfer_outgoing_decreases_balance(live_server):
+    pesel = "10101010101"
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Out", "last_name": "Go", "pesel": pesel},
+    )
+    response = requests.post(
+        f"{live_server}/api/accounts/{pesel}/transfer",
+        json={"type": "outgoing", "amount": 15.0},
+    )
+    assert response.status_code == 200
+    updated = requests.get(f"{live_server}/api/accounts/{pesel}").json()
+    assert updated["balance"] == -15.0
+
+
+def test_transfer_express_applies_fee(live_server):
+    pesel = "20202020202"
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Ex", "last_name": "Press", "pesel": pesel},
+    )
+    response = requests.post(
+        f"{live_server}/api/accounts/{pesel}/transfer",
+        json={"type": "express", "amount": 10.0},
+    )
+    assert response.status_code == 200
+    updated = requests.get(f"{live_server}/api/accounts/{pesel}").json()
+    assert updated["balance"] == -11.0
+
+
+def test_transfer_unknown_type_returns_400(live_server):
+    pesel = "30303030303"
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Un", "last_name": "Known", "pesel": pesel},
+    )
+    response = requests.post(
+        f"{live_server}/api/accounts/{pesel}/transfer",
+        json={"type": "weird", "amount": 5.0},
+    )
+    assert response.status_code == 400
+    assert response.json()["message"] == "Nieznany typ przelewu"

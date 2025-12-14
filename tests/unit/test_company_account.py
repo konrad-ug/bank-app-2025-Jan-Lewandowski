@@ -1,5 +1,38 @@
-from src.company_account import CompanyAccount
+import json
+
 import pytest
+import requests
+
+from src import company_account as company_account_module
+from src.company_account import CompanyAccount
+
+@pytest.fixture(autouse=True)
+def mock_mf_api(mocker):
+    state = {"status": "Czynny", "status_code": 200, "subject": True, "call_count": 0, "last_url": None}
+
+    def fake_get(url, timeout=10):
+        state["call_count"] += 1
+        state["last_url"] = url
+
+        resp = mocker.Mock()
+        resp.status_code = state["status_code"]
+
+        def resp_json():
+            subject = {"statusVat": state["status"]} if state.get("subject") else None
+            return {"result": {"subject": subject}}
+
+        resp.json.side_effect = resp_json
+        resp.text = json.dumps(resp_json())
+
+        def raise_for_status():
+            if resp.status_code >= 400:
+                raise requests.HTTPError(f"{resp.status_code}")
+
+        resp.raise_for_status.side_effect = raise_for_status
+        return resp
+
+    mocker.patch.object(company_account_module.requests, "get", side_effect=fake_get)
+    return state
 
 class TestCompanyAccount:
     @pytest.fixture
@@ -24,6 +57,30 @@ class TestCompanyAccount:
     def test_company_account_valid_nip_value(self, company_account: CompanyAccount):
         assert company_account.nip == "1231231231"
 
+    def test_check_vat_status_returns_true_for_czynny(self):
+        account = CompanyAccount("firma", "1234567890")
+        assert account.check_vat_status("1234567890") is True
+
+    def test_check_vat_status_returns_false_for_non_czynny(self, mock_mf_api):
+        mock_mf_api["status"] = "Zwolniony"
+        account = CompanyAccount("firma", "1234567890")
+        assert account.check_vat_status("1234567890") is False
+
+    def test_check_vat_status_raises_for_404(self, mock_mf_api):
+        mock_mf_api["status_code"] = 404
+        with pytest.raises(ValueError, match="Company not registered!!"):
+            CompanyAccount("firma", "1234567890")
+
+    def test_check_vat_status_raises_when_subject_missing(self, mock_mf_api):
+        mock_mf_api["subject"] = False
+        with pytest.raises(ValueError, match="Company not registered!!"):
+            CompanyAccount("firma", "1234567890")
+
+    def test_constructor_raises_when_api_returns_404(self, mock_mf_api):
+        mock_mf_api["status_code"] = 404
+        with pytest.raises(ValueError, match="Company not registered!!"):
+            CompanyAccount("firma", "1234567890")
+
     def test_company_account_wrong_nip_value(self):
         company_account = CompanyAccount("firma", "1231213213231231abc")
         assert company_account.nip == "Niepoprawny NIP!"
@@ -31,6 +88,8 @@ class TestCompanyAccount:
     def test_company_account_nip_too_short(self):
         company_account = CompanyAccount("firma", "12345")
         assert company_account.nip == "Niepoprawny NIP!"
+        # no remote call for invalid length
+        assert company_account.is_vat_active is None
 
     def test_company_account_nip_too_long(self):
         company_account = CompanyAccount("firma", "1234567890123")

@@ -8,7 +8,8 @@ registry = AccountRegistry()
 @app.route("/api/accounts", methods=['POST'])
 def create_account():
     data = request.get_json()
-    print(f"Create account request: {data}")
+    if registry.search_account_based_on_pesel(data["pesel"]):
+        return jsonify({"message": "Account with this PESEL already exists"}), 409
     account = PersonalAccount(data["first_name"], data["last_name"], data["pesel"])
     registry.add_account(account)
     return jsonify({"message": "Account created"}), 201
@@ -70,3 +71,26 @@ def delete_account(pesel):
     found_person = registry.search_account_based_on_pesel(pesel)
     found_person = None
     return jsonify({"message": "Account deleted"}), 200
+
+@app.route("/api/accounts/<pesel>/transfer", methods=['POST'])
+def transfer_funds(pesel):
+    data = request.get_json()
+
+    if registry.search_account_based_on_pesel(pesel) is None:
+        return jsonify({"message": "Account not found"}), 404
+    
+    found_person = registry.search_account_based_on_pesel(pesel)
+
+    amount = data["amount"]
+
+    if data["type"] == "incoming":
+        found_person.balance += amount
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    elif data["type"] == "outgoing":
+        found_person.balance -= amount
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    elif data["type"] == "express":
+        found_person.balance -= (amount + found_person.oplata_za_express_przelew)
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    else:
+        return jsonify({"message": "Nieznany typ przelewu"}), 400

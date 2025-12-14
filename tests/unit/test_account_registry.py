@@ -40,10 +40,10 @@ class TestRegistry:
   def test_get_all_accounts_empty(self, account_registry: AccountRegistry):
     assert account_registry.get_all_accounts() == []
   
-  def test_return_amount_of_accounts(self, account_registry: AccountRegistry, personal_account1: PersonalAccount, personal_account2: PersonalAccount):
+  def test_get_account_count(self, account_registry: AccountRegistry, personal_account1: PersonalAccount, personal_account2: PersonalAccount):
     account_registry.add_account(personal_account1)
     account_registry.add_account(personal_account2)
-    assert account_registry.return_amount_of_accounts() == 2
+    assert account_registry.get_account_count() == 2
 
-  def test_return_amount_of_accounts(self, account_registry: AccountRegistry):
-    assert account_registry.return_amount_of_accounts() == 0
+  def test_get_account_count(self, account_registry: AccountRegistry):
+    assert account_registry.get_account_count() == 0

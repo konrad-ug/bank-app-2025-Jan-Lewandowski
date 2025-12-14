@@ -13,8 +13,8 @@ class AccountRegistry:
             return account
     return None
 
-  def return_all_accounts(self):
+  def get_all_accounts(self):
     return self.accounts
   
-  def return_amount_of_accounts(self):
+  def get_account_count(self):
     return len(self.accounts)

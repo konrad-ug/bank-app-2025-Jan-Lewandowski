@@ -16,7 +16,7 @@ class TestPersonalAccount:
     ])
     def test_loan(self, account: PersonalAccount, historia, amount, expected_result, expected_balance):
       account.historia = historia
-      account.balance = 0  # reset na wszelki wypadek
+      account.balance = 0
       result = account.submit_for_loan(amount)
       assert result == expected_result
       assert account.balance == expected_balance

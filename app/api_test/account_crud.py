@@ -7,7 +7,7 @@ from werkzeug.serving import make_server
 from app.api import app, registry
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def live_server():
     server = make_server("127.0.0.1", 5005, app)
     thread = threading.Thread(target=server.serve_forever, daemon=True)

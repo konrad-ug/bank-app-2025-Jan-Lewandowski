@@ -188,8 +188,7 @@ class TestCompanyAccount:
         assert result == -5.0
         assert company_account.balance == -5.0
         assert company_account.historia == [-10.0]
-
-    # is_express_send_correct()
+        
     def test_is_express_send_correct_true(self, company_account: CompanyAccount):
         company_account.balance = 100.0
         assert company_account.is_express_send_correct(50.0)

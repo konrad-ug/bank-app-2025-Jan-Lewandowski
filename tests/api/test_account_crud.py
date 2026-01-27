@@ -92,7 +92,7 @@ def test_get_account_by_pesel_found(live_server):
 
 def test_get_account_by_pesel_not_found(live_server):
     response = requests.get(f"{live_server}/api/accounts/99999999999")
-    assert response.status_code == 500
+    assert response.status_code == 404
 
 
 def test_update_account_full(live_server):
@@ -143,7 +143,7 @@ def test_delete_account_removes_record(live_server):
     assert delete_resp.status_code == 200
 
     get_resp = requests.get(f"{live_server}/api/accounts/{pesel}")
-    assert get_resp.status_code == 500
+    assert get_resp.status_code == 404
 
 
 def test_delete_account_not_found(live_server):

@@ -14,7 +14,7 @@ def client():
 
 def test_create_and_delete_accounts_perf(client):
     for i in range(100):
-        pesel = f"8000000{i:05d}"
+        pesel = f"800000{i:05d}"
 
         start = time.perf_counter()
         create_resp = client.post(

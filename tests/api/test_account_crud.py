@@ -132,6 +132,25 @@ def test_delete_account(live_server):
     assert response.status_code == 200
     assert response.json()["message"] == "Account deleted"
 
+
+def test_delete_account_removes_record(live_server):
+    pesel = "89898989898"
+    requests.post(
+        f"{live_server}/api/accounts",
+        json={"first_name": "Del", "last_name": "Me", "pesel": pesel},
+    )
+    delete_resp = requests.delete(f"{live_server}/api/accounts/{pesel}")
+    assert delete_resp.status_code == 200
+
+    get_resp = requests.get(f"{live_server}/api/accounts/{pesel}")
+    assert get_resp.status_code == 500
+
+
+def test_delete_account_not_found(live_server):
+    response = requests.delete(f"{live_server}/api/accounts/00000000000")
+    assert response.status_code == 404
+    assert response.json()["message"] == "Account not found"
+
 def test_transfer(live_server):
     pesel = "99999999999"
     requests.post(

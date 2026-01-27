@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 import pytest
 
@@ -31,12 +32,15 @@ def test_send_history_via_email_personal_success(mock_smtp_send):
     account = PersonalAccount("Jan", "Kowalski", "12345678901")
     account.historia = [100, -20]
 
+    expected_subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+    expected_body = f"Personal account history: {account.historia}"
+
     result = account.send_history_via_email("user@example.com")
 
     assert result is True
     mock_smtp_send.assert_called_once_with(
-        "Transaction History",
-        "Your transaction history:\n100\n-20",
+        expected_subject,
+        expected_body,
         "user@example.com",
     )
 
@@ -46,12 +50,15 @@ def test_send_history_via_email_personal_failure(mock_smtp_send):
     account = PersonalAccount("Jan", "Kowalski", "12345678901")
     account.historia = [10]
 
+    expected_subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+    expected_body = f"Personal account history: {account.historia}"
+
     result = account.send_history_via_email("user@example.com")
 
     assert result is False
     mock_smtp_send.assert_called_once_with(
-        "Transaction History",
-        "Your transaction history:\n10",
+        expected_subject,
+        expected_body,
         "user@example.com",
     )
 
@@ -61,12 +68,15 @@ def test_send_history_via_email_company_success(mock_smtp_send, mock_mf_api):
     account = CompanyAccount("ACME", "1234567890")
     account.historia = [200, -50]
 
+    expected_subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+    expected_body = f"Company account history: {account.historia}"
+
     result = account.send_history_via_email("corp@example.com")
 
     assert result is True
     mock_smtp_send.assert_called_once_with(
-        "Transaction History",
-        "Your transaction history:\n200\n-50",
+        expected_subject,
+        expected_body,
         "corp@example.com",
     )
     assert mock_mf_api.call_count == 1
@@ -77,12 +87,15 @@ def test_send_history_via_email_company_failure(mock_smtp_send, mock_mf_api):
     account = CompanyAccount("ACME", "1234567890")
     account.historia = [-10]
 
+    expected_subject = f"Account Transfer History {date.today().strftime('%Y-%m-%d')}"
+    expected_body = f"Company account history: {account.historia}"
+
     result = account.send_history_via_email("corp@example.com")
 
     assert result is False
     mock_smtp_send.assert_called_once_with(
-        "Transaction History",
-        "Your transaction history:\n-10",
+        expected_subject,
+        expected_body,
         "corp@example.com",
     )
     assert mock_mf_api.call_count == 1

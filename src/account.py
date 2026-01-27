@@ -1,4 +1,5 @@
-from app.lib.smtp import SMTPClient
+from datetime import date
+from smtp.smtp import SMTPClient
 
 class Account:
     def __init__(self):
@@ -33,7 +34,13 @@ class Account:
         return self.balance >= kwota and kwota > 0
 
     def send_history_via_email(self, email_address):
-        subject = "Transaction History"
-        text = "Your transaction history:\n" + "\n".join(map(str, self.historia))
+        today = date.today().strftime("%Y-%m-%d")
+        subject = f"Account Transfer History {today}"
+
+        if hasattr(self, "company_name"):
+            prefix = "Company account history"
+        else:
+            prefix = "Personal account history"
+        text = f"{prefix}: {self.historia}"
 
         return SMTPClient.send(subject, text, email_address)

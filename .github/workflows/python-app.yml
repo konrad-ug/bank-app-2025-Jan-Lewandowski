@@ -36,5 +36,17 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python3 -m coverage run --source=src -m pytest
+        python3 -m coverage run --source=src -m pytest tests/unit
         python3 -m coverage report
+    - name: Start flask
+      run: |
+        export FLASK_APP=app/api.py
+        export FLASK_ENV=development
+        export PYTHONPATH=$GITHUB_WORKSPACE
+        flask run &
+    - name: Execute API tests
+      run: |
+        python3 -m pytest tests/api
+    - name: start mongo
+      run: |
+        docker compose -f mongo.yml up -d

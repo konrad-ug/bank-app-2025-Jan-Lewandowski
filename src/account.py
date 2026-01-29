@@ -1,3 +1,6 @@
+from datetime import date
+from smtp.smtp import SMTPClient
+
 class Account:
     def __init__(self):
         self.historia = []
@@ -29,3 +32,15 @@ class Account:
 
     def is_express_send_correct(self, kwota):
         return self.balance >= kwota and kwota > 0
+
+    def send_history_via_email(self, email_address):
+        today = date.today().strftime("%Y-%m-%d")
+        subject = f"Account Transfer History {today}"
+
+        if hasattr(self, "company_name"):
+            prefix = "Company account history"
+        else:
+            prefix = "Personal account history"
+        text = f"{prefix}: {self.historia}"
+
+        return SMTPClient.send(subject, text, email_address)

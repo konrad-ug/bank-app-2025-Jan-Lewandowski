@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from src.account_registry import AccountRegistry
 from src.personal_account import PersonalAccount
+from src.mongo_accounts_repository import MongoAccountsRepository
 
 app = Flask(__name__)
 registry = AccountRegistry()
@@ -8,7 +9,8 @@ registry = AccountRegistry()
 @app.route("/api/accounts", methods=['POST'])
 def create_account():
     data = request.get_json()
-    print(f"Create account request: {data}")
+    if registry.search_account_based_on_pesel(data["pesel"]):
+        return jsonify({"message": "Account with this PESEL already exists"}), 409
     account = PersonalAccount(data["first_name"], data["last_name"], data["pesel"])
     registry.add_account(account)
     return jsonify({"message": "Account created"}), 201
@@ -30,6 +32,8 @@ def get_account_count():
 @app.route("/api/accounts/<pesel>", methods=['GET'])
 def get_account_by_pesel(pesel):
     found_person = registry.search_account_based_on_pesel(pesel)
+    if found_person is None:
+        return jsonify({"message": "Account not found"}), 404
     return (
         jsonify(
             {
@@ -67,6 +71,50 @@ def update_account(pesel):
 
 @app.route("/api/accounts/<pesel>", methods=['DELETE'])
 def delete_account(pesel):
-    found_person = registry.search_account_based_on_pesel(pesel)
-    found_person = None
+    removed = registry.remove_account_by_pesel(pesel)
+    if not removed:
+        return jsonify({"message": "Account not found"}), 404
     return jsonify({"message": "Account deleted"}), 200
+
+@app.route("/api/accounts/<pesel>/transfer", methods=['POST'])
+def transfer_funds(pesel):
+    data = request.get_json()
+
+    if registry.search_account_based_on_pesel(pesel) is None:
+        return jsonify({"message": "Account not found"}), 404
+    
+    found_person = registry.search_account_based_on_pesel(pesel)
+
+    amount = data["amount"]
+
+    if data["type"] == "incoming":
+        found_person.balance += amount
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    elif data["type"] == "outgoing":
+        found_person.balance -= amount
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    elif data["type"] == "express":
+        found_person.balance -= (amount + found_person.oplata_za_express_przelew)
+        return jsonify({"message": "Zlecenie przyjęto do realizacji"}), 200
+    else:
+        return jsonify({"message": "Nieznany typ przelewu"}), 400
+    
+
+@app.route("/api/accounts/save", methods=['POST'])
+def save_accounts():
+    mongo_repo = MongoAccountsRepository()
+    mongo_repo.save_all(registry.get_all_accounts())
+    return jsonify({"message": "Accounts saved"}), 200
+
+@app.route("/api/accounts/load", methods=['POST'])
+def load_accounts():
+    mongo_repo = MongoAccountsRepository()
+    accounts = mongo_repo.load_all()
+    registry.accounts = []
+    for account in accounts:
+        registry.add_account(account)
+    return jsonify({"message": "Accounts loaded"}), 200
+@app.route("/api/accounts/clear", methods=['POST'])
+def clear_accounts():
+    registry.accounts = []
+    return jsonify({"message": "Accounts cleared"}), 200

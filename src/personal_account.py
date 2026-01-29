@@ -36,3 +36,28 @@ class PersonalAccount(Account):
             return True
         else:
             return False
+
+    def to_dict(self):
+        return {
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "pesel": self.pesel,
+            "balance": self.balance,
+            "historia": self.historia,
+            "oplata_za_express_przelew": self.oplata_za_express_przelew,
+        }
+
+    @staticmethod
+    def from_dict(data):
+        account = PersonalAccount(
+            data.get("first_name"),
+            data.get("last_name"),
+            data.get("pesel"),
+        )
+        if "balance" in data:
+            account.balance = data["balance"]
+        if "historia" in data:
+            account.historia = data["historia"]
+        if "oplata_za_express_przelew" in data:
+            account.oplata_za_express_przelew = data["oplata_za_express_przelew"]
+        return account

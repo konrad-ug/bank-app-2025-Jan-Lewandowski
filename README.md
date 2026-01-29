@@ -3,12 +3,8 @@
 
 ## Author:
 name:
-
+Jan
 surname:
-
+Lewandowski
 group:
-
-## How to start the app
-
-
-## How to execute tests
+3

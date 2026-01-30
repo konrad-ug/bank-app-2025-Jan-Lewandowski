@@ -21,7 +21,6 @@ class TestPersonalAccount:
       assert result == expected_result
       assert account.balance == expected_balance
 
-    # Account creation and PESEL validation – używamy fixture gdzie się da
     def test_account_creation_first_name(self, account: PersonalAccount):
         assert account.first_name == "John"
 
@@ -47,7 +46,6 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "123123abcd")
         assert account.pesel == "Invalid"
 
-    # Promo code tests – nie da się użyć fixture (bo promo wpływa na konstruktor)
     def test_account_promo_valid(self):
         account = PersonalAccount("John", "Doe", "12312312312", "PROM_abc")
         assert account.balance == 50.0
@@ -68,7 +66,6 @@ class TestPersonalAccount:
         account = PersonalAccount("John", "Doe", "12312312312", "INVALID_FORMAT")
         assert account.balance == 0.0
 
-    # get() method – używamy fixture
     def test_account_get_positive_amount_returns_value(self, account: PersonalAccount):
         result = account.get(50.0)
         assert result == 50.0
@@ -93,7 +90,6 @@ class TestPersonalAccount:
         account.get(-50.0)
         assert account.historia == []
 
-    # send() method – fixture + ręczne ustawienie balance gdzie potrzebne
     def test_account_send_enough_money_decreases_balance(self, account: PersonalAccount):
         account.balance = 50.0
         account.historia = []

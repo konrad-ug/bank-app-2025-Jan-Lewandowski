@@ -53,7 +53,6 @@ class TestCompanyAccount:
       assert result == expected_result
       assert company_account.balance == expected_balance
 
-    # NIP validation
     def test_company_account_valid_nip_value(self, company_account: CompanyAccount):
         assert company_account.nip == "1231231231"
 
@@ -76,6 +75,11 @@ class TestCompanyAccount:
         with pytest.raises(ValueError, match="Company not registered!!"):
             CompanyAccount("firma", "1234567890")
 
+    def test_check_vat_status_raises_http_error(self, mock_mf_api):
+        mock_mf_api["status_code"] = 500
+        with pytest.raises(requests.HTTPError):
+            CompanyAccount("firma", "1234567890")
+
     def test_constructor_raises_when_api_returns_404(self, mock_mf_api):
         mock_mf_api["status_code"] = 404
         with pytest.raises(ValueError, match="Company not registered!!"):
@@ -88,7 +92,6 @@ class TestCompanyAccount:
     def test_company_account_nip_too_short(self):
         company_account = CompanyAccount("firma", "12345")
         assert company_account.nip == "Niepoprawny NIP!"
-        # no remote call for invalid length
         assert company_account.is_vat_active is None
 
     def test_company_account_nip_too_long(self):
@@ -103,7 +106,6 @@ class TestCompanyAccount:
         company_account = CompanyAccount("firma", "0000000001")
         assert company_account.nip == "0000000001"
 
-    # initialization
     def test_company_account_inherits_from_account(self, company_account: CompanyAccount):
         assert hasattr(company_account, "historia")
         assert hasattr(company_account, "balance")
@@ -114,7 +116,6 @@ class TestCompanyAccount:
     def test_company_account_has_express_fee_defined(self, company_account: CompanyAccount):
         assert company_account.oplata_za_express_przelew == 5.0
 
-    # get() method
     def test_get_returns_positive_amount(self, company_account: CompanyAccount):
         result = company_account.get(50.0)
         assert result == 50.0
@@ -135,7 +136,6 @@ class TestCompanyAccount:
         company_account.get(-50.0)
         assert company_account.balance == 0.0
 
-    # send() method
     def test_send_enough_money_decreases_balance(self, company_account: CompanyAccount):
         company_account.balance = 50.0
         company_account.send(30.0)
@@ -156,7 +156,6 @@ class TestCompanyAccount:
         company_account.send(-20.0)
         assert company_account.balance == 30.0
 
-    # express_send method
     def test_express_send_enough_money_decreases_balance(self, company_account: CompanyAccount):
         company_account.balance = 50.0
         company_account.express_send(30.0)

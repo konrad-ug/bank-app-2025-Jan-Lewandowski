@@ -27,3 +27,19 @@ def test_load_all_builds_accounts(mocker):
     assert len(loaded) == 2
     assert loaded[0].pesel == "11111111111"
     assert loaded[1].pesel == "22222222222"
+
+
+def test_default_init_resolves_collection(mocker):
+    client_mock = mocker.MagicMock()
+    db_mock = mocker.MagicMock()
+    collection_mock = mocker.MagicMock()
+    client_mock.__getitem__.return_value = db_mock
+    db_mock.__getitem__.return_value = collection_mock
+    patched_client = mocker.patch("src.mongo_accounts_repository.MongoClient", return_value=client_mock)
+
+    repo = MongoAccountsRepository()
+
+    assert repo.collection is collection_mock
+    patched_client.assert_called_once_with("mongodb://localhost:27017/")
+    client_mock.__getitem__.assert_called_once_with("app_db")
+    db_mock.__getitem__.assert_called_once_with("accounts")
